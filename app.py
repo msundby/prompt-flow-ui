@@ -1,3 +1,4 @@
+import base64
 import streamlit as st
 import urllib.request
 import json
@@ -51,21 +52,25 @@ def main():
     # React to user input
     user_input = st.chat_input("Ask me anything...")
 
-        # File uploader (placed under the message input field)
+    # File uploader (placed under the message input field)
     uploaded_file = st.file_uploader("Upload a log file", type=["txt", "log"])
     
     if uploaded_file is not None:
         # Read file as string and set it as user input
-        string_data = uploaded_file.getvalue().decode("utf-8")
-        st.chat_message("user").markdown(string_data) 
+        byte_data = uploaded_file.getvalue()
+        encoded_data = base64.b64encode(byte_data)
+
+        # st.chat_message("user").markdown(string_data) DELETED
 
         # Optionally, append the file content to the chat history
         st.session_state.chat_history.append(
-            {"inputs": {"question": string_data},
+            {"inputs": {"base64_file": str(encoded_data, 'utf-8')},
              "outputs": {"answer": "Uploaded log file contents."}}
         )
 
-    
+        # Treat the uploaded file content as user input
+        user_input = str(encoded_data, 'utf-8')
+
     # Process user input if it exists
     if user_input:
         # Display user message in chat message container
